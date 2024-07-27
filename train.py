@@ -29,5 +29,6 @@ for epoch in range(1000):
 
         print(f'Epoch [{epoch + 1}/1000], Loss: {loss.item()}')
 
-torch.save(model, f'MyTransformer_temp.pth')
+torch.save(model.state_dict(), f'transformer_model_state.pth')
+
 
