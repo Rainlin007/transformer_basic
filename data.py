@@ -6,7 +6,7 @@ import torch.utils.data as Data
 # E: decoding output 的结束符
 # P：意为padding，如果当前句子短于本batch的最长句子，那么用这个符号填补缺失的单词
 sentence = [
-    # enc_input   dec_input    dec_output
+    # enc_input          dec_input            dec_output
     ['我 喜欢 一个 啤酒 P','S i like a beer .', 'i like a beer . E'],
     ['我 喜欢 一个 可乐 P','S i like a coke .', 'i like a coke . E'],
 ]

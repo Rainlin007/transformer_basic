@@ -4,7 +4,8 @@ from model import *
 
 
 # 原文使用的是大小为4的beam search，这里为简单起见使用更简单的greedy贪心策略生成预测，不考虑候选，每一步选择概率最大的作为输出
-# 如果不使用greedy_decoder，那么我们之前实现的model只会进行一次预测得到['i']，并不会自回归，所以我们利用编写好的Encoder-Decoder来手动实现自回归（把上一次Decoder的输出作为下一次的输入，直到预测出终止符）
+# 如果不使用greedy_decoder，那么我们之前实现的model只会进行一次预测得到['i']，
+# 并不会自回归，所以我们利用编写好的Encoder-Decoder来手动实现自回归（把上一次Decoder的输出作为下一次的输入，直到预测出终止符）
 def greedy_decoder(model, enc_input, start_symbol):
     """enc_input: [1, seq_len] 对应一句话"""
     enc_outputs = model.encoder(enc_input)  # enc_outputs: [1, seq_len, 512]
@@ -32,10 +33,14 @@ def greedy_decoder(model, enc_input, start_symbol):
         )  # projected: [1, 当前生成的tgt_len, tgt_vocab_size]
         # max返回的是一个元组（最大值，最大值对应的索引），所以用[1]取到最大值对应的索引, 索引就是类别，即预测出的下一个词
         # keepdim为False会导致减少一维
-        prob = projected.squeeze(0).max(dim=-1, keepdim=False)[1]  # prob: [1],
+        p1 = projected.squeeze(0)
+        
+        # max的第二个维度是在给定max的维度中的索引
+        p2 = p1.max(dim=-1, keepdim=False)[1]  # prob: [1],
+
         # prob是一个一维的列表，包含目前为止依次生成的词的索引，最后一个是新生成的（即下一个词的类别）
         # 因为注意力是依照前面的词算出来的，所以后生成的不会改变之前生成的
-        next_symbol = prob.data[-1]
+        next_symbol = p2.data[-1]
         if next_symbol == tgt_vocab["."]:
             flag = False
         print(next_symbol, idx2word[next_symbol.item()])
@@ -54,11 +59,13 @@ with torch.no_grad():
         greedy_dec_input = greedy_decoder(
             model, enc_inputs[i].view(1, -1), start_symbol=tgt_vocab["S"]
         )
+        
+        # greedy_dec_input是基于贪婪策略生成的，而贪婪解码的输出是基于当前时间步生成的假设的输出。这意味着它可能不是最优的输出，
+        # 因为它仅考虑了每个时间步的最有可能的单词，而没有考虑全局上下文。
+        # 因此，为了获得更好的性能评估，通常会将整个输入序列和之前的假设输出序列传递给模型，以考虑全局上下文并允许模型更准确地生成输出
         predict = model(
             enc_inputs[i].view(1, -1), greedy_dec_input
         )  # predict: [batch_size * tgt_len, tgt_vocab_size]
         predict = predict.data.max(dim=-1, keepdim=False)[1]
-        """greedy_dec_input是基于贪婪策略生成的，而贪婪解码的输出是基于当前时间步生成的假设的输出。这意味着它可能不是最优的输出，因为它仅考虑了每个时间步的最有可能的单词，而没有考虑全局上下文。
-        因此，为了获得更好的性能评估，通常会将整个输入序列和之前的假设输出序列传递给模型，以考虑全局上下文并允许模型更准确地生成输出
-        """
+        
         print(enc_inputs[i], "->", [idx2word[n.item()] for n in predict])
