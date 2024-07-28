@@ -38,7 +38,7 @@ def greedy_decoder(model, enc_input, start_symbol):
         next_symbol = prob.data[-1]
         if next_symbol == tgt_vocab["."]:
             flag = False
-        print(next_symbol)
+        print(next_symbol, idx2word[next_symbol.item()])
     return dec_input  # dec_input: [1,tgt_len]
 
 

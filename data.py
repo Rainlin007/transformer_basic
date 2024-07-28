@@ -7,16 +7,18 @@ import torch.utils.data as Data
 # P：意为padding，如果当前句子短于本batch的最长句子，那么用这个符号填补缺失的单词
 sentence = [
     # enc_input   dec_input    dec_output
-    ['ich mochte ein bier P','S i want a beer .', 'i want a beer . E'],
-    ['ich mochte ein cola P','S i want a coke .', 'i want a coke . E'],
+    ['我 喜欢 一个 啤酒 P','S i like a beer .', 'i like a beer . E'],
+    ['我 喜欢 一个 可乐 P','S i like a coke .', 'i like a coke . E'],
 ]
 
 # 词典，padding用0来表示
 # 源词典，本例中即德语词典
-src_vocab = {'P':0, 'ich':1,'mochte':2,'ein':3,'bier':4,'cola':5}
+src_vocab = {'P':0, '我':1,'喜欢':2,'一个':3,'啤酒':4,'可乐':5}
 src_vocab_size = len(src_vocab) # 6
+
 # 目标词典，本例中即英语词典,相比源多了特殊符
-tgt_vocab = {'P':0,'i':1,'want':2,'a':3,'beer':4,'coke':5,'S':6,'E':7,'.':8}
+tgt_vocab = {'P':0,'i':1,'like':2,'a':3,'beer':4,'coke':5,'S':6,'E':7,'.':8}
+
 # 反向映射词典，idx —— word，原代码那个有点不好理解
 idx2word = {v:k for k,v in tgt_vocab.items()}
 tgt_vocab_size = len(tgt_vocab) # 9
